@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="no">
+<head>
+    <meta charset="utf-8">
+    <title>Blogg-Generator</title>
+    <link rel="stylesheet" href="index.css">
+</head>
+<body>
+    <div id = "hoved" class="parent">
+        <!-- Hoved divven som inneholder input feltene hvor du skriver overskriften, selve tekst innholdet, signaturen, velger bakgrunnsfargen, og legg ut knappen -->
+        <h1>Blogg-Generator</h1>
+
+        <label for = "overskrift">Overskrift
+            <input type="text" id = "overskrift" placeholder="Overskrift til innlegget ditt">
+        </label>
+
+        <p class="tomtFelt"></p>
+        <!-- Disse tommefeltene er hvor vi legger inn beskjeden om at en av inputtene er ugyldige. Det er 1 for hvert tekstfelt. -->
+
+        <label for = 'tekst'>Tekst
+            <textarea id="tekst" placeholder="Selve innholdet her"></textarea>
+        </label>
+
+        <p class="tomtFelt"></p>
+
+        <label for="signatur">Signatur
+            <input type="text" id="signatur" placeholder="Fornavn og Etternavn">
+        </label>
+
+        <p class="tomtFelt"></p>
+
+        <label for="farge">Bakgrunnsfarge</label>
+        <div id = "fargeKonteiner">
+                <input type="color" id="farge" value="#87cefa">
+        </div>
+        <!-- Farge inputten ligger i en div fordi farge inputten pleier ofte å ha et usynlig rekkevidde som gjør at brukeren kan trykke langt unna farge inputten og fortsatt komme seg inn på den (Kan forklares bedre på fagsamtelen) -->
+
+        <button onclick="validerPost()">Legg ut</button> <!-- En knapp som kaller funksjonen validerPost() når den blir trykket på --> 
+    </div>
+
+    <div id = 'innleggene' class="parent">
+        <h1>Innleggene</h1>
+    </div>
+    <!-- Her samles alle innleggene -->
+
+    <script>
+        let tomtFeltEl = document.querySelectorAll(".tomtFelt")
+        let alleEl = document.querySelectorAll("#overskrift, #tekst, #signatur");
+        let fargeEl = document.querySelector("#farge");
+        let alleInnlegg = [];
+
+        for (let i = 0; i < alleEl.length; i++) {
+            alleEl[i].addEventListener("input", function() { // Legger til en input eventlistener på alle tre tekstfeltene så vi kan analysere dem i "LIVE" tid. Istedenfor å kalle en funksjon som vi lager ett annet sted kaller den funksjonen som ligger inne i selve eventListeneren
+                if (i == alleEl.length - 1) { // Hvis "i" er lik siste indeksen av alle elementer arrayen vil det da si at vi redigerer på Signatur inputten
+                    this.value = this.value.replace(/[^a-zA-ZæøåÆØÅ ]/, "") // Dette kalles for en regular expression og bruker .replace funksjonen til å begrenset hva symboler og bokstaver som kan brukes i dette tekstfeltet. Dette tekstfeltet som det referes til her er Signatur tekstfeltet, og det expression-en sier er at du kan bruke: alle bokstaver fra a til z (store og små), æøå (store og små), og mellomrom
+
+                    if (this.value.trim().split(' ').length < 2) { // Bruker ".trim" til å fjerne mellomrom som ligger forann forste symbolet (hvis det er massemelrom men ingen symboler vil det bare fjerne alle mellom rom og la feltet stå tomt). ".split" funskjonen deler opp Stringen om til en Array. Så lenge lengden til arrayen er kortere enn 2 (da har ikke brukeren oppgitt fornavn og etternavn) så vil dette under kjøre
+                            tomtFeltEl[i].innerHTML = "Trenger fornavn og etternavn"; // Her bruker vi de tome paragrafene som var i mellom de 3 tekst inputtene. Her skriver vi en feil melding og hva som er feil
+                            this.style.border = "1px solid rgba(255, 0, 0, 0.5)"; // Gjør borderen til inputten om til rød for å indikere at noe er feil i dette feltet
+                        } else {
+                            this.style.border = "1px solid rgba(0, 255, 0, 0.5)" // Når brukeren har da skrevet opp både fornavn og etternavn vil da borderen bli grønn for å indikere at ting er riktig nå
+                            tomtFeltEl[i].innerHTML = ""; // Fjerner vekk feilmeldingen
+                        }
+                } else {
+                    if (this.value.trim() == "") { // Så lenge tekstfeltene (ikke Signatur feltet) er tomme vil:
+                        tomtFeltEl[i].innerHTML = "Feltet er tomt"; // Denne feilmeldingen stå
+                        this.style.border = "1px solid rgba(255, 0, 0, 0.5)"; // Borderen vil være rød
+                    } else { // Når det er tekst i feltene
+                        tomtFeltEl[i].innerHTML = ""; // Vil feilmeldingen fjernes
+                        this.style.border = "1px solid rgba(0, 255, 0, 0.5)"; // Borderen blir grønn
+                    }
+                }
+            })
+        }
+
+        function validerPost() { // Dette er funksjonen som kalles når knappen trykkes. Denne bruker vi for å validere om alt i feltene er riktige før vi kan lage innlegget.
+            let klarPost = true;
+            let signaturEl = document.querySelector("#signatur");
+
+            if (signaturEl.value.trim().split(' ').length < 2 ) { // Helt likt som det forklart tidligere
+                klarPost = false; // Hvis det mangler skikkelig fornavn og etternavn er innlegget ikke klar for å legges ut
+                
+                signaturEl.value = "";
+                
+                tomtFeltEl[2].innerHTML = "Trenger fornavn og etternavn"; // Dette er det paragraf feltet som tilhører til Signatur inputten, samme feil melding som tidligere
+                signaturEl.style.border = "1px solid rgba(255, 0, 0, 0.5)";
+            }
+
+            for (let i = 0; i < alleEl.length; i++) {
+                alleEl[i].value = alleEl[i].value.trim();
+                
+                if (alleEl[i].value == "") {
+                    if (tomtFeltEl[i].innerHTML == ""){ // Sjekker om det allerede står en feil melding der fra før av, dette er fordi andre tekstfeltene (ikke Signaturen)
+                        tomtFeltEl[i].innerHTML = "Feltet er tomt";
+                        alleEl[i].style.border = "1px solid rgba(255, 0, 0, 0.5)";
+                    }
+                    klarPost = false;
+                }
+            }
+
+            if (klarPost == true) {
+                for (let i = 0; i < alleEl.length; i++) {
+                    alleEl[i].style.border = "1px solid rgba(63,114,175,0.3)"; // Setter borderne til inputtene tilbake til normalt
+                } 
+
+                lagPost() // Kaller lag post funksjonen
+            }
+        }
+
+        function lagPost() {
+            let dato = new Date().toLocaleDateString(); // Henter datoen i lokal tid, vi får da en String der det står DD/MM/ÅÅÅÅ
+            let klokke = new Date().toLocaleTimeString(); // Henter klokkeslettet i lokal tid, vi får da en String der det står TT:MM:SS
+            let overskriftTekst = "<h2>" + document.getElementById("overskrift").value + "</h2>"; // Bruker ".getElementById" for å hente overskrift elementet. Får valuen ved å bruke ".value"
+            let hovedTekst = "<p>" + document.getElementById("tekst").value + "</p>"; // Bruker ".getElementById" for å hente overskrift elementet. Får valuen ved å bruke ".value"
+            let signaturTekst = "<p> Lagt ut av " + document.getElementById("signatur").value + ", " + dato + ", kl. " + klokke; // Bruker ".getElementById" for å hente overskrift elementet. Får valuen ved å bruke ".value"
+            let nyPost = {overskrift: overskriftTekst, tekst: hovedTekst, signatur: signaturTekst, dato: dato, klokke: klokke}; // Lager et objekt der jeg legger inn alle ting som er relevant for innlegget
+            alleInnlegg.unshift(nyPost) // Legger det fremst i en array med alle andre innleggene
+
+            visPost(0) // Kaller en funksjon som viser det nyligste innlegget i arrayen
+        }
+
+        function visPost(index) {
+            let nyttDivEl = document.createElement("div"); // Lager et div element for det nye innlegget
+            nyttDivEl.className = "innlegg"; // Gir div elementet klassen "innlegg"
+            nyttDivEl.style.backgroundColor = fargeEl.value; // Legger til bakgrunnsfargen som brukeren valgte selv
+            nyttDivEl.innerHTML += alleInnlegg[index].overskrift + alleInnlegg[index].tekst + "<hr>" + alleInnlegg[index].signatur; // Legger inn overskriften, teksten, og signaturen, til div elementet
+            let forrigeInnlegg = document.querySelector("#innleggene .innlegg"); // Henter forrige innlegg
+            document.getElementById("innleggene").insertBefore(nyttDivEl, forrigeInnlegg); // Legger inn det nyeste div elementet forann det forrige div elementet ved bruk av .insertBefore. Dette nyligste div elementet vil da bli det forrige innlegget når vi lager neste innlegg
+
+            for (let i = 0; i < alleEl.length; i++) {
+                alleEl[i].value = ""; // Nullstiller valuen
+            }
+            fargeEl.value = "#87cefa"; // Nullstiller fargevelgeren
+        }
+    </script>
+</body>
+</html>
