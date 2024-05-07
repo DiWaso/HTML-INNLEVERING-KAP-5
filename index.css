@@ -1,0 +1,12 @@
+body { 
+    background-color: #F9F7F7;
+    font-family: 'Gill Sans MT', sans-serif;
+    }
+
+#meny {
+    position: relative;
+    top: -8px;
+    width: 100%;
+    height: 50px;
+    background-color: black;
+}
